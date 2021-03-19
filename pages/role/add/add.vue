@@ -20,10 +20,10 @@
 					>{{item.permission_name}}</u-checkbox>
 				</u-checkbox-group>
 				<u-button @click="checkedAll" size="mini">全选</u-button>
-				
 			</u-form-item>
 		</u-form>
-		<u-button @click="submit">提交</u-button>
+		<u-button @click="submit" :type="type" :plain="plain" :loading="loading" :ripple="ripple">提交</u-button>
+		<co-toast ref="cToast"></co-toast>
 	</view>
 </template>
 
@@ -31,14 +31,18 @@
 export default {
 	data() {
 		return {
+			loading: false,
+			ripple: true,
+			plain: true,
+			type:'primary',
 			form: {
 				roleID:'',
 				roleName: '',
 				comment: '',
+				result:[]
 			},
 			permissionList: [],
 			activeColor: '#2979ff',
-			result:[],
 			rules: {
 				roleID:[
 					{
@@ -61,37 +65,66 @@ export default {
 	},
 	methods: {
 		onLoad(){
-			
+			// 加载权限列表
 			let permissionList = JSON.parse(JSON.stringify(uni.getStorageSync('permissionList')))
+			if(this.$u.test.isEmpty(permissionList)){
+				console.info("激活 getPermissionList >>>")
+				uniCloud.callFunction({
+					name:'application',
+					data:{
+						service:'permission',
+						action: 'getPermissionList'
+					}
+				}).then((r)=>{
+					permissionList  = r.result.permissionList
+					uni.setStorageSync('permissionList',permissionList)
+					console.info("getPermissionList success <<<" , r.result)
+				})
+			}
 			permissionList.forEach((item)=>{
 				this.permissionList.push(Object.assign(item,{checked: false})) 
-			})
-			
-			if(this.permissionList){
-				return
-			}
-			console.info("激活 getPermissionList >>>")
-			uniCloud.callFunction({
-				name:'application',
-				data:{
-					service:'permission',
-					action: 'getPermissionList'
-				}
-			}).then((r)=>{
-				this.list = r.result.permissionList
-				console.info("getPermissionList success <<<" , r.result)
 			})
 		},
 		// 必须要在onReady生命周期，因为onLoad生命周期组件可能尚未创建完毕
 		onReady() {
 			this.$refs.uForm.setRules(this.rules);
-			
-			console.info(this.permissionList)
 		},
+		// 提交表单
 		submit() {
 			this.$refs.uForm.validate(valid => {
+				let {roleID, roleName, comment, result} = this.form
+				let data = {
+					roleID,
+					roleName,
+					comment,
+					permission:result
+				}
 				if (valid) {
-					console.log('验证通过');
+					console.info("激活 addRole >>>")
+					this.loading = true
+					uniCloud.callFunction({
+						name:'application',
+						data:{
+							service:'role',
+							action: 'addRole',
+							params: data
+						}
+					}).then((r)=>{
+						this.show()
+						if(r.result.code == 0){
+							setTimeout(()=>{
+								uni.navigateBack({
+									delta:1,
+									success(e){
+										var page = getCurrentPages().pop();
+										if (page == undefined || page == null) return;
+										page.onLoad();
+									}
+								});
+							},2000)
+						}
+						console.info('addRole Success <<<' , r.result.code)
+					}).finall(()=>{this.loading = false})
 				} else {
 					console.log('验证失败');
 				}
@@ -99,14 +132,22 @@ export default {
 		},
 		// 选中任一checkbox时，由checkbox-group触发
 		checkboxGroupChange(e) {
-			this.result = e
-			console.info(this.result)
+			this.form.result = e
 		},
 		// 全选
 		checkedAll() {
+			// 置空初始化
+			this.form.result= []
 			this.permissionList.map(val => {
+				this.form.result.push(val.permission_id)
 				val.checked = true;
 			})
+		},
+		// 成功提示
+		show(){
+			let title = '添加成功'
+			let type = 'success'
+			this.$refs.cToast.showToast(title , type)
 		}
 	},
 };

@@ -55,8 +55,7 @@ export default {
 		onReady() {
 			this.$refs.uForm.setRules(this.rules);
 		},
-		onLoad(){
-		},
+		// 提交表单
 		submit() {
 			this.$refs.uForm.validate(valid => {
 				let data = {
@@ -86,7 +85,6 @@ export default {
 										page.onLoad();
 									}
 								});
-								
 							},2000)
 						}
 						console.info('addPermission Success <<<' , r.result.code)
@@ -96,6 +94,7 @@ export default {
 				}
 			});
 		},
+		// 成功提示
 		show(){
 			let title = '添加成功'
 			let type = 'success'

@@ -82,6 +82,27 @@ module.exports = class user extends explain.service {
 		return res
 	}
 	
+	/**
+	 * 获取用户列表
+	 */
+	async getUserList(){
+		let res = await db.collection('uni-id-users').limit(10).get()
+		console.info(res)
+		let data = {
+			code: 1,
+			msg: '获取用户列表失败',
+			userList: [],
+			total:0
+		}
+		if(res.data){
+			data.code = 0
+			data.msg = '获取用户列表成功'
+			data.userList = res.data
+			data.total = res.affectedDocs
+		}
+		return data
+	}
+	
 	/**获取用户信息
 	 * @param {Object} params
 	 * 	{String} uniIdToken  用户token
@@ -105,17 +126,56 @@ module.exports = class user extends explain.service {
 	 *  {String} uid  用户ID,通过checkToken返回
 	 */
 	async updateUser(params) {
-	    let payload = await uniID.checkToken(params.uniIdToken);
-		if(payload.code > 0) {
-		    return payload
-		  }
-		let { uid } = payload
+		let { uid , role , name , sex , sexStr , 
+		registration , college , collegeStr} = params 
 	    let res = uniID.updateUser({
 			uid,
-			nickname
+			nickname: name,
+			gender:sex,
+			sexStr,
+			role,
+			register_date:registration,
+			college,
+			collegeStr,
 		});
 		return res
 	}
 	
+	/**
+	 * 管理员添加用户（注册+绑定角色+更新）
+	 */
+	async addUser(params){
+		let {username , password , 
+		role , 
+		name , sex , sexStr , registration , 
+		college , collegeStr} = params 
+		let payload = await uniID.register({
+			username,
+			password
+		})
+		if(payload.code > 0){
+			return payload
+		}
+		let { uid } = payload
+		
+		let res = await uniID.updateUser({
+			uid,
+			nickname: name,
+			gender:sex,
+			sexStr,
+			role,
+			register_date:registration,
+			college,
+			collegeStr,
+		})
+		
+		return res
+	}
 	
+	/**
+	 * 删除用户（只是将状态改为禁用）
+	 */
+	deleteUser(params){
+		
+	}
 }

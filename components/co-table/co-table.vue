@@ -12,14 +12,16 @@
 				<u-th class="u-th">{{nameList[2]}}</u-th>
 				<u-th class="u-th">{{nameList[3]}}</u-th>
 			</u-tr>
-			<u-tr class="u-tr"  v-for="(item,index) in list" :key="index">
-				<u-td class="u-td">{{item.permission_id}}</u-td>
-				<u-td class="u-td">{{item.permission_name}}</u-td>
-				<u-td class="u-td">{{item.comment}}</u-td>
-				<u-td class="u-td">
-					<u-button size="mini" type="primary" :custom-style="customStyle" @click="handleEdit(item)">修改</u-button>
-				</u-td>
-			</u-tr>
+			<view v-for="(item,index) in list" :key="index">
+				<u-tr class="u-tr" >
+					<u-td class="u-td">{{item[`${labelList[0]}`]}}</u-td>
+					<u-td class="u-td">{{item[`${labelList[1]}`]}}</u-td>
+					<u-td class="u-td">{{item[`${labelList[2]}`]}}</u-td>
+					<u-td class="u-td">
+						<u-button size="mini" type="primary" :custom-style="customStyle" @click="handleEdit(item)">修改</u-button>
+					</u-td>
+				</u-tr>
+			</view>
 		</u-table>
 	</view>
 </template>
@@ -33,6 +35,7 @@ export default {
 		editUrl:String,
 		nameList:Array,
 		list:Array,
+		labelList:Array
 	},
 	data() {
 		return {

@@ -2,7 +2,7 @@
 	<view class="content">
 		<co-navbar title="权限"></co-navbar>
 		<view class="title">权限列表</view>
-		<co-table label="添加权限" :addUrl="addUrl" :editUrl="editUrl"  :nameList="permissionName" :list="permissionList"></co-table>
+		<co-table label="添加权限" :addUrl="addUrl" :editUrl="editUrl"  :nameList="permissionName" :list="permissionList" :labelList="labelList"></co-table>
 		<co-tabbar></co-tabbar>
 	</view>
 </template>
@@ -11,7 +11,8 @@
 	export default {
 		data() {
 			return {
-				permissionName:['权限ID' , '权限名称' , '备注' , '操作' ], //表格的头
+				permissionName:['权限ID' , '权限名称' , '备注' , '操作' ], //表格的标题
+				labelList:['permission_id','permission_name','comment'], // 表格的字段
 				permissionList:[], //表格的数据
 				addUrl:'/pages/permission/add/add' ,// 添加的跳转
 				editUrl:'/pages/permission/edit/edit' //修改的跳转
